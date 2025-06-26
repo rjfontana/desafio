@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Caça ao Tesouro da Luz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Google Fonts para visual Sci-Fi -->
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: radial-gradient(ellipse at 60% 20%, #23263a 0%, #181c2b 80%);
+      color: #7fffd4;
+      font-family: 'Share Tech Mono', 'Segoe UI', Arial, monospace;
+      margin: 0;
+      min-height: 100vh;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      letter-spacing: 0.04em;
+      padding: 0;
+    }
+    .painel {
+      background: linear-gradient(120deg, #23263a 80%, #1a1d2a 100%);
+      border: 2.5px solid #00ffe7;
+      border-radius: 18px;
+      padding: 22px 16px 16px 16px;
+      margin: 18px 0;
+      box-shadow: 0 0 24px #00ffe733, 0 1.5px 8px #2228;
+      max-width: 410px;
+      width: 95vw;
+      min-width: 0;
+      font-size: 1.08em;
+      position: relative;
+      transition: box-shadow 0.2s;
+      backdrop-filter: blur(1.5px);
+    }
+    .painel h2 {
+      color: #00ffe7;
+      font-size: 1.18em;
+      margin-bottom: 12px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 8px #00ffe7cc, 0 2px 8px #00ffe744;
+      font-family: inherit;
+      border-bottom: 1.5px solid #00ffe7;
+      padding-bottom: 4px;
+      margin-top: 0;
+    }
+    .painel .status {
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 1em;
+      letter-spacing: 0.5px;
+      font-family: inherit;
+    }
+    .ok { color: #00ffae; text-shadow: 0 0 6px #00ffae99; }
+    .erro { color: #ff4c8b; text-shadow: 0 0 6px #ff4c8b99; }
+    .painel input[type="radio"], .painel input[type="checkbox"] {
+      accent-color: #00ffe7;
+      margin-right: 8px;
+      transform: scale(1.18);
+    }
+    .painel label {
+      margin-bottom: 8px;
+      display: block;
+      color: #7fffd4;
+      font-size: 1em;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .painel label:hover {
+      color: #00ffe7;
+    }
+    .drag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin: 10px 0 18px 0;
+    }
+    .drag-item {
+      background: linear-gradient(90deg, #00ffe7 60%, #23263a 100%);
+      color: #181c2b;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-weight: bold;
+      font-size: 1em;
+      cursor: grab;
+      box-shadow: 0 2px 12px #00ffe744, 0 0 0 2px #00ffe7;
+      border: none;
+      margin-bottom: 4px;
+      user-select: none;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+      letter-spacing: 1px;
+    }
+    .drop-zone {
+      min-width: 90px;
+      min-height: 38px;
+      background: #23263a;
+      border: 2px dashed #00ffe7;
+      border-radius: 10px;
+      margin: 0 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1em;
+      color: #00ffe7;
+      margin-bottom: 8px;
+      transition: background 0.2s, border 0.2s;
+      font-family: inherit;
+      box-shadow: 0 0 8px #00ffe733;
+    }
+    .drop-zone.filled {
+      background: #00ffe7;
+      color: #23263a;
+      border: 2px solid #00ffe7;
+      box-shadow: 0 0 12px #00ffe7cc;
+    }
+    .painel-final {
+      background: linear-gradient(120deg, #00ffe7 80%, #fffde7 100%);
+      color: #23263a;
+      border: 3px solid #00ffe7;
+      border-radius: 18px;
+      box-shadow: 0 0 0 6px #00ffe744;
+      padding: 22px 16px;
+      font-size: 1.18em;
+      margin: 32px auto 0 auto;
+      max-width: 370px;
+      text-align: center;
+      animation: tesouroFade 1.2s;
+      font-family: inherit;
+      letter-spacing: 1.5px;
+    }
+    @keyframes tesouroFade {
+      from { transform: scale(0.8); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    /* Parâmetros ópticos */
+    #painelParametros {
+      background: linear-gradient(120deg, #181c2b 60%, #23263a 100%);
+      border: 2.5px solid #00ffe7;
+      box-shadow: 0 0 24px #00ffe733;
+      margin-bottom: 18px;
+      flex-direction: column;
+      padding: 10px 2vw;
+      display: flex;
+      gap: 0;
+      max-width: 99vw;
+    }
+    #painelParametros h2 {
+      color: #00ffe7;
+      border-bottom: 1.5px solid #00ffe7;
+      margin-bottom: 10px;
+      font-size: 1.12em;
+      letter-spacing: 1.5px;
+    }
+    #painelParametros label {
+      color: #7fffd4;
+      font-size: 0.98em;
+      margin-bottom: 2px;
+    }
+    #painelParametros input[type="range"] {
+      width: 100%;
+      accent-color: #00ffe7;
+      background: #23263a;
+      border-radius: 6px;
+      height: 4px;
+      margin-bottom: 4px;
+    }
+    #painelParametros input[type="range"]:focus {
+      outline: 2px solid #00ffe7;
+    }
+    #painelParametros div {
+      font-size: 1em;
+      color: #00ffe7;
+      margin-bottom: 10px;
+    }
+    #painelParametros ul {
+      color: #7fffd4;
+    }
+    /* Espectro Sci-Fi */
+    #painelEspectro {
+      background: linear-gradient(120deg, #23263a 80%, #1a1d2a 100%);
+      border: 2.5px solid #00ffe7;
+      box-shadow: 0 0 24px #00ffe733;
+    }
+    #espectroBox {
+      background: #181c2b;
+      border: 2px solid #00ffe7;
+      box-shadow: 0 0 16px #00ffe744;
+      width: 98vw;
+      max-width: 340px;
+      min-width: 0;
+      padding: 12px 0 0 0;
+    }
+    #espectroImg {
+      border: 2px solid #00ffe7 !important;
+      box-shadow: 0 0 16px #00ffe744 !important;
+      width: 95vw;
+      max-width: 300px;
+      min-width: 0;
+    }
+    #faixaVisivel {
+      border: 2px solid #00ffae !important;
+      box-shadow: 0 0 12px #00ffae99;
+    }
+    #indicador {
+      background: #fff;
+      border-radius: 3px;
+      box-shadow: 0 0 12px #00ffe7, 0 0 0 2px #23263a;
+      border: 2px solid #00ffe7;
+      transition: box-shadow 0.2s;
+    }
+    #indicador:active {
+      box-shadow: 0 0 24px #00ffe7, 0 0 0 2px #23263a;
+    }
+    /* Responsivo */
+    @media (max-width: 600px) {
+      .painel, .painel-final { max-width: 99vw; font-size: 0.97em; padding: 12px 4vw 10px 4vw; }
+      .painel h2 { font-size: 1.05em; }
+      .drag-item { font-size: 0.95em; padding: 7px 8px; }
+      .drop-zone { min-width: 54px; font-size: 0.93em; }
+      #painelParametros { flex-direction: column; padding: 10px 2vw; }
+      #painelParametros > div { border: none !important; padding: 0 !important; }
+      #espectroBox { max-width: 99vw; }
+      #espectroImg { max-width: 96vw; }
+    }
+
+    /* Estilo do botão do Instagram */
+    .instagram-button {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      background: rgba(24,28,43,0.72);
+      border: 2px solid #00ffe7;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #00ffe7aa;
+      padding: 7px;
+      transition: box-shadow 0.2s, border 0.2s, background 0.2s;
+      cursor: pointer;
+      opacity: 0.85;
+      width: 48px;
+      height: 48px;
+      justify-content: center;
+    }
+    .instagram-button:hover {
+      box-shadow: 0 0 24px #00ffe7, 0 0 0 2px #23263a;
+      background: #23263a;
+      opacity: 1;
+    }
+
+    /* Estilo do botão do Google Drive */
+    .drive-button {
+      position: fixed;
+      top: 74px;
+      left: 18px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      background: rgba(24,28,43,0.72);
+      border: 2px solid #00ffe7;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #00ffe7aa;
+      padding: 7px;
+      transition: box-shadow 0.2s, border 0.2s, background 0.2s;
+      cursor: pointer;
+      opacity: 0.85;
+      width: 48px;
+      height: 48px;
+      justify-content: center;
+    }
+    .drive-button:hover {
+      box-shadow: 0 0 24px #00ffe7, 0 0 0 2px #23263a;
+      background: #23263a;
+      opacity: 1;
+    }
+    @media (max-width: 600px) {
+      .drive-button {
+        top: unset;
+        bottom: 18px;
+        left: 12px;
+        width: 42px;
+        height: 42px;
+        padding: 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Comando inicial -->
+<div class="painel" style="background:transparent;border:none;box-shadow:none;max-width:600px;text-align:center;margin-top:18px;margin-bottom:-10px;">
+  <h2 style="color:#00ffe7;text-shadow:0 0 8px #00ffe7cc;">Ajuste os parâmetros ópticos e responda as perguntas para desbloquear a resposta secreta!</h2>
+  <p style="color:#7fffd4;font-size:1.08em;margin-top:8px;">
+    Siga as etapas abaixo:<br>
+    1. Ajuste todos os parâmetros ópticos.<br>
+    2. Responda corretamente cada painel.<br>
+    3. Arraste o indicador para a faixa da luz visível.<br>
+    <b>Desbloqueie o segredo final!</b>
+  </p>
+</div>
+
+<!-- Parâmetros ópticos -->
+<div class="painel" id="painelParametros" style="max-width:900px;display:flex;flex-wrap:wrap;gap:0;justify-content:center;">
+  <div style="flex:1 1 260px;min-width:220px;padding-right:18px;border-right:2px solid #00ffe7;">
+    <h2>PARÂMETROS ÓPTICOS</h2>
+    <label>FREQUÊNCIA DA LUZ<br><span style="font-size:0.95em;">(400-750 THz - Espectro Visível)</span></label>
+    <input type="range" min="400" max="750" value="400" id="freq" style="width:100%;">
+    <div><span id="freqDisplay">400</span> THz</div>
+
+    <label>INTENSIDADE LUMINOSA<br><span style="font-size:0.95em;">(0-100 candela/m²)</span></label>
+    <input type="range" min="0" max="100" value="0" id="int" style="width:100%;">
+    <div><span id="intDisplay">0</span> cd/m²</div>
+
+    <label>DIFERENÇA DE FASE<br><span style="font-size:0.95em;">(0-360 graus)</span></label>
+    <input type="range" min="0" max="360" value="0" id="fase" style="width:100%;">
+    <div><span id="faseDisplay">0</span>°</div>
+
+    <label>ENERGIA DO FÓTON<br><span style="font-size:0.95em;">(1.65-3.10 eV)</span></label>
+    <input type="range" min="1.65" max="3.10" step="0.01" value="1.65" id="energia" style="width:100%;">
+    <div><span id="energiaDisplay">1.65</span> eV</div>
+  </div>
+  <div style="flex:1 1 260px;min-width:220px;padding-left:18px;">
+    <h2>STATUS ÓPTICO</h2>
+    <div id="statusFreq" class="status"></div>
+    <div id="statusInt" class="status"></div>
+    <div id="statusFase" class="status"></div>
+    <div id="statusEnergia" class="status"></div>
+    <div style="margin:18px 0 0 0;">
+      <b>CONFIGURAÇÃO ALVO:</b>
+      <ul style="font-size:0.98em;line-height:1.5em;color:#7fffd4;">
+        <li>🔵 Freq: 532 THz (Verde)</li>
+        <li>💡 Intensidade: 73 cd/m²</li>
+        <li>🔄 Fase: 180°</li>
+        <li>⚡ Energia: 2.20 eV</li>
+      </ul>
+      <span style="font-size:0.93em;color:#00ffe7;">
+        + 4 perguntas corretas<br>
+        + Espectro na faixa visível
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="painel" id="painel1">
+  <h2>1. Qual destas é uma fonte primária de luz?</h2>
+  <label><input type="radio" name="fonte" value="espelho">Espelho</label>
+  <label><input type="radio" name="fonte" value="sol">Sol</label>
+  <label><input type="radio" name="fonte" value="livro">Livro</label>
+  <div class="status" id="status1"></div>
+</div>
+
+<div class="painel" id="painel2">
+  <h2>2. Arraste cada cor para o seu comprimento de onda (nm)</h2>
+  <div class="drag-container" id="dragColors">
+    <div class="drag-item" draggable="true" data-cor="vermelho">Vermelho</div>
+    <div class="drag-item" draggable="true" data-cor="azul">Azul</div>
+    <div class="drag-item" draggable="true" data-cor="verde">Verde</div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:center;">
+    <div class="drop-zone" data-cor="vermelho">620-750</div>
+    <div class="drop-zone" data-cor="verde">495-570</div>
+    <div class="drop-zone" data-cor="azul">450-495</div>
+  </div>
+  <div class="status" id="status2"></div>
+</div>
+
+<div class="painel" id="painel3">
+  <h2>3. Marque todas as alternativas corretas sobre a luz:</h2>
+  <label><input type="checkbox" value="onda">A luz é uma onda eletromagnética</label>
+  <label><input type="checkbox" value="vacuo">Pode se propagar no vácuo</label>
+  <label><input type="checkbox" value="som">É igual ao som</label>
+  <div class="status" id="status3"></div>
+</div>
+
+<div class="painel" id="painel4">
+  <h2>4. Tipos de Ondas</h2>
+  <p>As ondas eletromagnéticas são ondas que, quanto ao seu formato e sua forma de propagação, são consideradas ondas:</p>
+  <label><input type="radio" name="tipo-onda" value="long">Longitudinais</label>
+  <label><input type="radio" name="tipo-onda" value="trans">Transversais</label>
+  <div class="status" id="status4"></div>
+</div>
+
+<div class="painel" id="painel5">
+  <h2>5. Fórmula Fundamental</h2>
+  <p>Observando as fórmulas da ondulatória, qual é considerada a equação fundamental da ondulatória?</p>
+  <label><input type="radio" name="fundamental" value="vlf">v = λ · f</label>
+  <label><input type="radio" name="fundamental" value="fT">f = 1/T</label>
+  <label><input type="radio" name="fundamental" value="doppler">f₀ = f · (vₛ ± v₀)/(vₛ ± vf)</label>
+  <div class="status" id="status5"></div>
+</div>
+
+<div class="painel" id="painelEspectro">
+  <h2>ESPECTRO ELETROMAGNÉTICO</h2>
+  <p>Arraste o indicador até posicioná-lo na faixa de <b>Luz Visível</b></p>
+  <div id="espectroBox" style="position:relative;width:320px;max-width:95vw;height:90px;margin:auto;background:#181c2b;border-radius:12px;padding:12px 0 0 0;">
+    <div id="espectroImg" style="width:300px;height:40px;margin:auto;position:relative;border-radius:8px;border:2px solid #00ffe7;
+      background: linear-gradient(to right, #ff3300 0%, #ff9900 10%, #ffff00 18%, #00ff00 28%, #00ffff 38%, #0000ff 48%, #8b00ff 58%, #fff 100%);
+      box-shadow:0 2px 12px #00ffe744;">
+      <!-- Barra colorida -->
+      <div id="faixaVisivel" style="position:absolute;left:90px;top:-2px;width:60px;height:44px;border:2px solid #00ffae;border-radius:6px;pointer-events:none;"></div>
+      <div id="indicador" style="position:absolute;top:-8px;left:0;width:6px;height:56px;background:#fff;border-radius:3px;box-shadow:0 0 12px #00ffe7,0 0 0 2px #23263a;cursor:pointer;border:2px solid #00ffe7;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:0.98em;color:#00ffe7;margin:6px 8px 0 8px;">
+      <span>Rádio</span>
+      <span>Micro</span>
+      <span>Luz Visível</span>
+      <span>UV</span>
+      <span>Raios-X</span>
+      <span>Gama</span>
+    </div>
+  </div>
+  <div id="statusEspectro" class="status"></div>
+</div>
+
+<div id="painelFinal"></div>
+
+<!-- Botão do Instagram -->
+<a href="https://www.instagram.com/profronaldo2025/" target="_blank" class="instagram-button">
+  <img src="artboard1.gif" alt="Instagram" style="width:100%;height:100%;display:block;object-fit:cover;border-radius:50%;">
+</a>
+
+<!-- Botão do Google Drive -->
+<a href="https://drive.google.com/drive/folders/1dQzVA818JRKStuHNhxJSDt7wXlBbi4k4?usp=drive_link" target="_blank" class="drive-button" title="Abrir pasta no Google Drive">
+  <img src="https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png" alt="Google Drive" style="width:32px;height:32px;display:block;">
+</a>
+
+<script>
+let respostas = {
+  painel1: false,
+  painel2: false,
+  painel3: false,
+  painel4: false,
+  painel5: false
+};
+
+// 1. Fonte primária de luz
+document.querySelectorAll('input[name="fonte"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    const status = document.getElementById("status1");
+    if (this.value === "sol") {
+      status.textContent = "Correto!";
+      status.className = "status ok";
+      respostas.painel1 = true;
+    } else {
+      status.textContent = "Tente novamente!";
+      status.className = "status erro";
+      respostas.painel1 = false;
+    }
+    checarTesouro();
+  });
+});
+
+// 2. Drag and drop cores
+let dragCor = null;
+document.querySelectorAll('#dragColors .drag-item').forEach(item => {
+  item.addEventListener('dragstart', function() {
+    dragCor = this;
+    setTimeout(() => this.style.opacity = "0.5", 0);
+  });
+  item.addEventListener('dragend', function() {
+    this.style.opacity = "1";
+  });
+});
+document.querySelectorAll('#painel2 .drop-zone').forEach(zone => {
+  zone.addEventListener('dragover', e => e.preventDefault());
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    if (dragCor && dragCor.dataset.cor === this.dataset.cor) {
+      this.textContent = dragCor.textContent;
+      this.classList.add("filled");
+      dragCor.style.visibility = "hidden";
+    }
+    // Checa se todos preenchidos corretamente
+    let ok = true;
+    document.querySelectorAll('#painel2 .drop-zone').forEach(z => {
+      if (!z.classList.contains("filled") || z.textContent.toLowerCase() !== z.dataset.cor) ok = false;
+    });
+    const status = document.getElementById("status2");
+    if (ok) {
+      status.textContent = "Muito bem!";
+      status.className = "status ok";
+      respostas.painel2 = true;
+    } else {
+      status.textContent = "";
+      respostas.painel2 = false;
+    }
+    checarTesouro();
+  });
+});
+
+// 3. Checkbox múltipla escolha
+document.querySelectorAll('#painel3 input[type="checkbox"]').forEach(cb => {
+  cb.addEventListener('change', function() {
+    const checks = Array.from(document.querySelectorAll('#painel3 input[type="checkbox"]:checked')).map(x => x.value);
+    const status = document.getElementById("status3");
+    if (checks.includes("onda") && checks.includes("vacuo") && !checks.includes("som") && checks.length === 2) {
+      status.textContent = "Correto!";
+      status.className = "status ok";
+      respostas.painel3 = true;
+    } else {
+      status.textContent = "Tente novamente!";
+      status.className = "status erro";
+      respostas.painel3 = false;
+    }
+    checarTesouro();
+  });
+});
+
+// 4. Tipos de Ondas
+document.querySelectorAll('input[name="tipo-onda"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    const status = document.getElementById("status4");
+    if (this.value === "trans") {
+      status.textContent = "Correto!";
+      status.className = "status ok";
+      respostas.painel4 = true;
+    } else {
+      status.textContent = "Tente novamente!";
+      status.className = "status erro";
+      respostas.painel4 = false;
+    }
+    checarTesouro();
+  });
+});
+
+// 5. Fórmula Fundamental
+document.querySelectorAll('input[name="fundamental"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    const status = document.getElementById("status5");
+    if (this.value === "vlf") {
+      status.textContent = "Correto!";
+      status.className = "status ok";
+      respostas.painel5 = true;
+    } else {
+      status.textContent = "Tente novamente!";
+      status.className = "status erro";
+      respostas.painel5 = false;
+    }
+    checarTesouro();
+  });
+});
+
+// Checagem final
+function checarTesouro() {
+  if (Object.values(respostas).every(v => v) && window.espectroCorreto) {
+    if (!document.getElementById("painelFinalMsg")) {
+      const painel = document.createElement("div");
+      painel.className = "painel-final";
+      painel.id = "painelFinalMsg";
+      painel.innerHTML = `
+        <h2>🛰️ Pista Final</h2>
+        <p><b>o premio está na fonte luminosa</b></p>
+      `;
+      document.getElementById("painelFinal").appendChild(painel);
+      painel.scrollIntoView({behavior: "smooth"});
+    }
+  } else {
+    const painel = document.getElementById("painelFinalMsg");
+    if (painel) painel.remove();
+  }
+}
+
+// Parâmetros ópticos
+const alvo = {
+  freq: 532,
+  intensidade: 73,
+  fase: 180,
+  energia: 2.20
+};
+
+const freq = document.getElementById("freq");
+const int = document.getElementById("int");
+const fase = document.getElementById("fase");
+const energia = document.getElementById("energia");
+
+function updateStatusOptico() {
+  document.getElementById("freqDisplay").textContent = freq.value;
+  document.getElementById("intDisplay").textContent = int.value;
+  document.getElementById("faseDisplay").textContent = fase.value;
+  document.getElementById("energiaDisplay").textContent = energia.value;
+
+  const difFreq = Math.abs(freq.value - alvo.freq);
+  const difInt = Math.abs(int.value - alvo.intensidade);
+  const difFase = Math.abs(fase.value - alvo.fase);
+  const difEnergia = Math.round(Math.abs(energia.value - alvo.energia) * 100);
+
+  document.getElementById("statusFreq").innerHTML = `<b>Frequência:</b> ${difFreq === 0 ? "✔️" : "❌"}<br>Diferença: ${difFreq} THz`;
+  document.getElementById("statusInt").innerHTML = `<b>Intensidade:</b> ${difInt === 0 ? "✔️" : "❌"}<br>Diferença: ${difInt} cd/m²`;
+  document.getElementById("statusFase").innerHTML = `<b>Fase:</b> ${difFase === 0 ? "✔️" : "❌"}<br>Diferença: ${difFase}°`;
+  document.getElementById("statusEnergia").innerHTML = `<b>Energia:</b> ${difEnergia === 0 ? "✔️" : "❌"}<br>Diferença: ${difEnergia} (×0.01 eV)`;
+}
+freq.oninput = int.oninput = fase.oninput = energia.oninput = updateStatusOptico;
+updateStatusOptico();
+
+// Espectro
+const espectro = {
+  min: 0,
+  max: 294, // 300px - indicador(6px)
+  visivelIni: 90,
+  visivelFim: 150
+};
+
+const indicador = document.getElementById("indicador");
+const espectroImg = document.getElementById("espectroImg");
+const statusEspectro = document.getElementById("statusEspectro");
+
+let arrastando = false;
+
+function getFaixa(pos) {
+  if (pos >= espectro.visivelIni && pos <= espectro.visivelFim) return "Luz Visível";
+  if (pos < 40) return "Rádio";
+  if (pos < espectro.visivelIni) return "Microondas";
+  if (pos <= 180) return "Ultravioleta";
+  if (pos <= 240) return "Raios-X";
+  return "Gama";
+}
+
+function updateIndicador(pos) {
+  pos = Math.max(espectro.min, Math.min(espectro.max, pos));
+  indicador.style.left = pos + "px";
+  const faixa = getFaixa(pos);
+  if (faixa === "Luz Visível") {
+    statusEspectro.innerHTML = `<b>Status: <span style="color:#00ffae;">✔️ Luz Visível</span></b>`;
+    statusEspectro.className = "status ok";
+    window.espectroCorreto = true;
+  } else {
+    statusEspectro.innerHTML = `<b>Status: <span style="color:#ff4c8b;">❌ Atualmente em: ${faixa}</span></b>`;
+    statusEspectro.className = "status erro";
+    window.espectroCorreto = false;
+  }
+  checarTesouro && checarTesouro();
+}
+
+// Mouse
+indicador.addEventListener("mousedown", function(e) {
+  arrastando = true;
+  document.body.style.userSelect = "none";
+});
+document.addEventListener("mouseup", function() {
+  arrastando = false;
+  document.body.style.userSelect = "";
+});
+document.addEventListener("mousemove", function(e) {
+  if (!arrastando) return;
+  const rect = espectroImg.getBoundingClientRect();
+  let x = e.clientX - rect.left;
+  updateIndicador(x - 3);
+});
+
+// Touch
+indicador.addEventListener("touchstart", function(e) {
+  arrastando = true;
+  document.body.style.userSelect = "none";
+  e.preventDefault();
+});
+document.addEventListener("touchend", function() {
+  arrastando = false;
+  document.body.style.userSelect = "";
+});
+document.addEventListener("touchmove", function(e) {
+  if (!arrastando) return;
+  const touch = e.touches[0];
+  const rect = espectroImg.getBoundingClientRect();
+  let x = touch.clientX - rect.left;
+  updateIndicador(x - 3);
+});
+
+// Clique direto na barra
+espectroImg.addEventListener("click", function(e) {
+  const rect = espectroImg.getBoundingClientRect();
+  let x = e.clientX - rect.left;
+  updateIndicador(x - 3);
+});
+
+// Inicializa na posição errada
+updateIndicador(20);
+
+// Integração com checarTesouro
+const oldChecarTesouro = window.checarTesouro;
+window.checarTesouro = function() {
+  if (typeof oldChecarTesouro === "function") oldChecarTesouro();
+  // Só libera o tesouro se espectroCorreto também for true
+  if (window.espectroCorreto === false) {
+    const painel = document.getElementById("painelFinalMsg");
+    if (painel) painel.remove();
+  }
+};
+</script>
+</body>
+</html>
